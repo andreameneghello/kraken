@@ -25,6 +25,7 @@ bundle: release
 	@mkdir -p $(APP_BUNDLE)/Contents/Resources
 	@cp .build/release/$(APP_NAME) $(APP_BUNDLE)/Contents/MacOS/
 	@cp scripts/Info.plist $(APP_BUNDLE)/Contents/Info.plist
+	@cp icons/AppIcon.icns $(APP_BUNDLE)/Contents/Resources/
 	@echo "Built $(APP_BUNDLE)"
 
 # Install to ~/Applications and launch
