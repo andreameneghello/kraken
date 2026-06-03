@@ -62,15 +62,12 @@ struct SidebarView: View {
             HStack(spacing: 12) {
                 HStack(spacing: 6) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                     TextField("Filter", text: $searchText)
-                        .font(.system(size: 12))
                         .textFieldStyle(.roundedBorder)
                     if !searchText.isEmpty {
                         Button { searchText = "" } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 12))
                                 .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.borderless)

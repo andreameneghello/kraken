@@ -14,14 +14,13 @@ The problem: AI CLI tools are powerful but their sessions vanish when you close 
 - Not a code editor (use Zed or Cursor for that).
 - Not a chat interface (it is a real terminal, not a message thread).
 
-## Features (planned)
+## Features
 
-- **Native macOS sidebar** listing all active and past terminal sessions.
+- **Native macOS sidebar** listing all active and past terminal sessions, grouped by working directory.
 - **Real embedded terminals** powered by [libghostty](https://github.com/ghostty-org/ghostty) — the same terminal engine used by Ghostty.
 - **Persistent sessions** via tmux running silently in the background. Quit Kraken, relaunch it, your sessions are still there.
-- **AI tool association** — tag sessions with the tool they run (Claude Code, Kiro, Pi, or custom).
 - **Session metadata** — custom names, working directories, timestamps, and search.
-- **macOS-native feel** — built with SwiftUI, standard keyboard shortcuts, proper focus management, and Metal-accelerated rendering.
+- **macOS-native feel** — built with SwiftUI, standard keyboard shortcuts, and Metal-accelerated rendering.
 
 ## Tech Stack
 
@@ -38,56 +37,43 @@ The problem: AI CLI tools are powerful but their sessions vanish when you close 
 ```
 Kraken/
 ├── App/              — Entry point, app lifecycle, delegates
-├── Core/             — libghostty C bridge (app init, surface lifecycle, config)
+├── Core/             — libghostty C bridge and tmux controller
 ├── UI/               — SwiftUI views (sidebar, terminal pane, toolbar)
-├── Model/            — Domain models (Session, AICommand, etc.)
-├── Persistence/      — SQLite setup and session repository
-├── Tmux/             — tmux daemon controller and command builders
-└── Helpers/          — Extensions, constants
+├── Model/            — Domain models (Session) and observable store
+└── Helpers/          — Extensions and utilities
 ```
-
-See [`plan.md`](plan.md) for the full phased implementation plan.
-
-## Prerequisites
-
-- **macOS 14+**
-- **Xcode 16+**
-- **Zig** (to build the `GhosttyKit.xcframework`):
-  ```bash
-  brew install zig
-  ```
 
 ## Getting Started
 
-### 1. Clone this repo and the Ghostty reference repo
+### Prerequisites
+
+- **macOS 14+**
+- **Xcode 16+** (required to build `GhosttyKit.xcframework`)
+- **Zig 0.15.x** (`brew install zig@0.15`)
+
+### 1. Build the GhosttyKit xcframework
+
+Clone the Ghostty repo and build the framework:
 
 ```bash
-git clone <this-repo> ~/repos/kraken
-# Ghostty source should already be at:
-# ~/repos/cloned-repos/ghostty
-```
-
-### 2. Build the GhosttyKit xcframework
-
-```bash
-cd ~/repos/cloned-repos/ghostty
+cd /path/to/ghostty
 zig build -Demit-xcframework
 ```
 
-This produces:
+Copy the result into this project:
+
+```bash
+cp -R /path/to/ghostty/zig-out/lib/GhosttyKit.xcframework \
+      /path/to/kraken/Frameworks/
 ```
-ghostty/zig-out/lib/GhosttyKit.xcframework
+
+### 2. Build and run
+
+Open `Package.swift` in Xcode and press **Cmd+R**, or use the Makefile:
+
+```bash
+make run
 ```
-
-### 3. Add the xcframework to the Xcode project
-
-1. Open `Kraken.xcodeproj` in Xcode.
-2. Drag `GhosttyKit.xcframework` into the **Frameworks, Libraries, and Embedded Content** section of the Kraken target.
-3. Set it to **Embed & Sign**.
-
-### 4. Build and run
-
-Select the Kraken scheme and hit **Cmd+R**.
 
 ## Debugging
 
@@ -136,23 +122,13 @@ tmux -L kraken attach -t <session-name>
 The Ghostty repo contains a minimal Swift example:
 
 ```bash
-cd ~/repos/cloned-repos/ghostty/example/swift-vt-xcframework
+cd /path/to/ghostty/example/swift-vt-xcframework
 swift build
 swift run
 ```
 
 This proves the xcframework links and runs independently of Kraken's UI.
 
-## Coding Guidelines
-
-All Swift and SwiftUI code in this project follows the conventions in [`swift_skill.md`](swift_skill.md). Key highlights:
-
-- Use `@Observable` classes (not `ObservableObject`) for shared state.
-- Target modern Swift concurrency — `async/await`, not `DispatchQueue`.
-- Prefer `foregroundStyle()` over `foregroundColor()`, `clipShape(.rect(cornerRadius:))` over `cornerRadius()`, and `NavigationStack` over `NavigationView`.
-- Avoid `GeometryReader` when newer alternatives (`containerRelativeFrame`, `visualEffect`) suffice.
-- Do not use `onTapGesture()` unless you need tap location/count — use `Button` instead.
-
 ## License
 
-TBD
+[MIT](LICENSE)

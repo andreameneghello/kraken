@@ -16,7 +16,9 @@ final class TmuxController {
     /// The config disables tmux copy mode on scroll so Ghostty handles
     /// scrolling natively with pixel-smooth scrollback.
     private static var configPath: String {
-        ("~/Library/Application Support/Kraken/tmux.conf" as NSString).expandingTildeInPath
+        FileManager.default.homeDirectoryForCurrentUser
+            .appending(path: "Library/Application Support/Kraken/tmux.conf")
+            .path
     }
 
     /// List all tmux session names. Returns empty array if tmux server is not running.
@@ -50,7 +52,7 @@ final class TmuxController {
     /// Create a new detached tmux session.
     /// Uses `directory` if provided, otherwise falls back to the user's home directory.
     func createSession(name: String, directory: String? = nil) -> Bool {
-        let dir = directory ?? NSHomeDirectory()
+        let dir = directory ?? FileManager.default.homeDirectoryForCurrentUser.path
         let result = runTmux(args: ["new-session", "-s", name, "-d", "-c", dir])
         return result.exitCode == 0 || listSessions().contains(name)
     }

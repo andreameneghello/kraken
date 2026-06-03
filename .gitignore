@@ -62,3 +62,11 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 Frameworks/
 *.xcframework
+.worktrees/
+
+# Built app bundle
+Kraken.app/
+
+# SwiftPM auto-generated Xcode workspace files
+.swiftpm/xcode/package.xcworkspace/
+.swiftpm/xcode/xcuserdata/

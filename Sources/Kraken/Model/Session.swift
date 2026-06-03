@@ -22,18 +22,22 @@ struct Session: Identifiable, Hashable, Sendable {
     /// - Anything else → last path component
     static func projectName(from path: String?) -> String {
         guard let path, !path.isEmpty else { return "~" }
-        let expanded = (path as NSString).expandingTildeInPath
-        let standardized = (expanded as NSString).standardizingPath
-        let home = (NSHomeDirectory() as NSString).standardizingPath
-        if standardized == home { return "~" }
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let expanded: String
+        if path.hasPrefix("~") {
+            expanded = home.path + path.dropFirst()
+        } else {
+            expanded = path
+        }
+        let standardized = URL(fileURLWithPath: expanded).standardizedFileURL.path
+        let homeStandardized = home.standardizedFileURL.path
+        if standardized == homeStandardized { return "~" }
         return URL(fileURLWithPath: standardized).lastPathComponent
     }
 
     /// Human-readable relative time since creation.
     var timeAgo: String {
         guard let date = creationDate else { return "" }
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+        return date.formatted(.relative(presentation: .named))
     }
 }

@@ -15,7 +15,7 @@
 export PATH="/opt/homebrew/opt/zig@0.15/bin:$PATH"
 
 # Build the xcframework
-cd ~/repos/cloned-repos/ghostty
+cd /path/to/ghostty
 zig build -Demit-xcframework
 ```
 
@@ -24,16 +24,18 @@ This produces:
 ghostty/zig-out/lib/GhosttyKit.xcframework
 ```
 
+> The `Frameworks/` directory must contain `GhosttyKit.xcframework` before the project will compile. If it is missing, build it using the steps above and copy it into place.
+
 Copy it into the Kraken project:
 ```bash
-cp -R ~/repos/cloned-repos/ghostty/zig-out/lib/GhosttyKit.xcframework \
-      ~/repos/kraken/Frameworks/
+cp -R /path/to/ghostty/zig-out/lib/GhosttyKit.xcframework \
+      /path/to/kraken/Frameworks/
 ```
 
 ## 2. Open the project in Xcode
 
 1. Open **Xcode**.
-2. Choose **File → Open** and select `~/repos/kraken/Package.swift`.
+2. Choose **File → Open** and select `/path/to/kraken/Package.swift`.
    Xcode will create an auto-generated project from the Swift Package.
 3. In the project navigator, select the **Kraken** target.
 4. Under **Frameworks, Libraries, and Embedded Content**, ensure `GhosttyKit.xcframework` is listed and set to **Embed & Sign**.

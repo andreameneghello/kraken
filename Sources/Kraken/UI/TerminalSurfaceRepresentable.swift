@@ -17,7 +17,7 @@ struct TerminalSurfaceRepresentable: NSViewRepresentable {
         bridge.appTick()
         context.coordinator.lastCommand = command
         // Ensure focus lands on the new surface.
-        DispatchQueue.main.async {
+        Task { @MainActor in
             view.window?.makeFirstResponder(view)
         }
         return view
@@ -28,7 +28,7 @@ struct TerminalSurfaceRepresentable: NSViewRepresentable {
             view.destroySurface()
             view.createSurface(command: command)
             context.coordinator.lastCommand = command
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 view.window?.makeFirstResponder(view)
             }
         }
