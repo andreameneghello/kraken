@@ -2,72 +2,45 @@
 
 ## Prerequisites
 
-- **macOS 14+**
-- **Xcode 16+** (required to build `GhosttyKit.xcframework` — the ~10 GB download from the App Store or [Apple Developer](https://developer.apple.com/download/))
-- **Zig 0.15.x** (`brew install zig@0.15`)
-
-> ⚠️ Command Line Tools alone are **not enough**. Ghostty's xcframework includes iOS simulator slices, and the iOS SDK only ships with the full Xcode app.
+- macOS 14+
+- Xcode 16+ (for building GhosttyKit.xcframework)
+- Zig 0.15.x (`brew install zig@0.15`)
+- zmx (`brew install neurosnap/tap/zmx` or download from https://zmx.sh)
 
 ## 1. Build GhosttyKit.xcframework
 
 ```bash
-# Ensure Zig 0.15 is on PATH
 export PATH="/opt/homebrew/opt/zig@0.15/bin:$PATH"
-
-# Build the xcframework
 cd /path/to/ghostty
 zig build -Demit-xcframework
+cp -R zig-out/lib/GhosttyKit.xcframework /path/to/kraken/Frameworks/
 ```
 
-This produces:
-```
-ghostty/zig-out/lib/GhosttyKit.xcframework
-```
+## 2. Build
 
-> The `Frameworks/` directory must contain `GhosttyKit.xcframework` before the project will compile. If it is missing, build it using the steps above and copy it into place.
-
-Copy it into the Kraken project:
 ```bash
-cp -R /path/to/ghostty/zig-out/lib/GhosttyKit.xcframework \
-      /path/to/kraken/Frameworks/
+cd kraken
+make run       # debug build, runs immediately
+make bundle    # release .app bundle
+make install   # install to ~/Applications/
 ```
-
-## 2. Open the project in Xcode
-
-1. Open **Xcode**.
-2. Choose **File → Open** and select `/path/to/kraken/Package.swift`.
-   Xcode will create an auto-generated project from the Swift Package.
-3. In the project navigator, select the **Kraken** target.
-4. Under **Frameworks, Libraries, and Embedded Content**, ensure `GhosttyKit.xcframework` is listed and set to **Embed & Sign**.
-
-> If `GhosttyKit.xcframework` does not appear automatically, drag it from the `Frameworks/` folder into the target's "Frameworks, Libraries, and Embedded Content" section.
-
-## 3. Build and run
-
-Select the **Kraken** scheme and press **Cmd+R**.
-
-You should see a terminal window with your default shell prompt.
 
 ## Troubleshooting
 
-### `DarwinSdkNotFound` during `zig build`
+### `zmx: command not found`
 
-You do not have Xcode installed, or `xcode-select` is pointing to Command Line Tools only. Run:
-```bash
-sudo xcode-select --switch /Applications/Xcode.app
-```
+Install zmx: `brew install neurosnap/tap/zmx` or place the binary at `/opt/homebrew/bin/zmx`.
 
 ### Blank terminal surface
 
-- Verify `GhosttyKit.xcframework` is embedded (not just linked).
-- Check that `TerminalSurfaceView.wantsLayer = true`.
-- Confirm Metal is available on your Mac (all Apple Silicon and recent Intel Macs support it).
+- Verify `GhosttyKit.xcframework` exists in `Frameworks/`
+- Check zmx logs: `tail -f /tmp/krkn/logs/zmx.log`
+- Verify session exists: `ZMX_DIR=/tmp/krkn zmx list --short`
 
-### Keyboard input not reaching the terminal
+### Session not appearing in sidebar
 
-- Ensure the view has focus (click inside the window).
-- Check the Xcode console for `ghostty_surface_key` errors.
+The sidebar polls zmx every 2 seconds. Ensure `ZMX_DIR` matches across all processes (set to `/tmp/krkn`).
 
-### Xcode cannot find `ghostty.h`
+### Crash on surface creation
 
-The C API is exposed through the `GhosttyKit` module map inside the xcframework. You do not need to add `include/ghostty.h` to header search paths manually — `import GhosttyKit` is sufficient.
+Check for zero-size resize (guarded in `TerminalSurfaceView.sizeDidChange`). If Ghostty crashes with `integer overflow`, the surface received invalid dimensions.
