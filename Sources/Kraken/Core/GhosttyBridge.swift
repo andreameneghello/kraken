@@ -67,7 +67,7 @@ final class GhosttyBridge {
     }
 
     /// Create a `ghostty_surface_t` attached to `view`, optionally overriding
-    /// the startup command (e.g. a tmux attach command).
+    /// the startup command (e.g. a zmx attach command).
     func createSurface(for view: TerminalSurfaceView, command: String? = nil) -> ghostty_surface_t? {
         guard let app else { return nil }
         var cfg = ghostty_surface_config_new()

@@ -38,6 +38,9 @@ final class TerminalSurfaceView: NSView {
     /// Report a new content size (in points) to the terminal core.
     func sizeDidChange(_ size: CGSize) {
         guard let surface else { return }
+        // Guard against zero dimensions — Ghostty's terminal code
+        // overflows when allocating zero columns/rows.
+        guard size.width > 0, size.height > 0 else { return }
         let scaled = convertToBacking(NSRect(origin: .zero, size: size)).size
         ghostty_surface_set_size(surface, UInt32(scaled.width), UInt32(scaled.height))
     }

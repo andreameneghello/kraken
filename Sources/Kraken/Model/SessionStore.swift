@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-/// Observable store that mirrors the tmux session list.
+/// Observable store that mirrors the zmx session list.
 @Observable
 @MainActor
 final class SessionStore {
@@ -12,7 +12,7 @@ final class SessionStore {
         selection.first { id in sessions.contains(where: { $0.id == id }) }
     }
 
-    private let tmux = TmuxController()
+    private let zmx = ZmxController()
     private var isPolling = false
 
     init() {
@@ -36,10 +36,15 @@ final class SessionStore {
     // MARK: - Actions
 
     func refresh() {
-        let infos = tmux.listSessionInfos()
+        let names = zmx.listSessions()
+        let detailed = zmx.listSessionsDetailed()
+        let dirMap = Dictionary(uniqueKeysWithValues: detailed.map { ($0.name, $0.directory) })
+
         let oldNames = Set(sessions.map(\.id))
         let oldGroups = Set(groupedSessions.map(\.project))
-        let newSessions = infos.map { Session(name: $0.name, path: $0.path, creationDate: $0.creationDate) }
+        let newSessions = names.map { name in
+            Session(name: name, path: dirMap[name], creationDate: nil)
+        }
         let newNames = Set(newSessions.map(\.id))
         let gone = oldNames.subtracting(newNames)
 
@@ -51,9 +56,12 @@ final class SessionStore {
             expandedProjects.insert(group)
         }
 
-        // Remove dead sessions from selection
+        // Remove dead sessions from selection and surface cache
         if !gone.isEmpty {
             selection.subtract(gone)
+            for id in gone {
+                SurfaceCache.shared.removeSurface(for: id)
+            }
         }
     }
 
@@ -107,33 +115,32 @@ final class SessionStore {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         let directory = project.flatMap { projectDirectories[$0] }
-        let success = tmux.createSession(name: trimmed, directory: directory)
+        let success = zmx.createSession(name: trimmed, directory: directory)
         guard success else { return }
+        // Clear killed flag so surface can be created for this session.
+        SurfaceCache.shared.allowRecreation(for: trimmed)
         refresh()
         selection = [trimmed]
     }
 
     func killSelected() {
         for id in selection {
-            tmux.killSession(name: id)
+            zmx.killSession(name: id)
+            SurfaceCache.shared.removeSurface(for: id)
         }
         refresh()
     }
 
     func killSession(id: String) {
-        tmux.killSession(name: id)
+        zmx.killSession(name: id)
+        SurfaceCache.shared.removeSurface(for: id)
         refresh()
     }
 
     func renameSession(id: String, to newName: String) {
-        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed != id else { return }
-        tmux.renameSession(oldName: id, newName: trimmed)
+        // Zmx does not support renaming sessions.
+        // No-op to keep the UI intact.
         refresh()
-        if selection.contains(id) {
-            selection.remove(id)
-            selection.insert(trimmed)
-        }
     }
 
     func selectAll() {

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Detail pane that renders the terminal for the selected tmux session.
+/// Detail pane that renders the terminal for the selected zmx session.
 struct TerminalPaneView: View {
     let sessionID: String
     let bridge: GhosttyBridge
@@ -10,7 +10,7 @@ struct TerminalPaneView: View {
             TerminalSurfaceRepresentable(
                 bridge: bridge,
                 size: geometry.size,
-                command: TmuxController.attachCommand(for: sessionID)
+                sessionID: sessionID
             )
         }
     }

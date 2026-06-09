@@ -53,7 +53,7 @@ struct MainWindowView: View {
             if let project = createInProject {
                 Text("Create a new session in project '\(project)'.")
             } else {
-                Text("Enter a name for the new tmux session.")
+                Text("Enter a name for the new session.")
             }
         }
     }
@@ -74,7 +74,7 @@ struct MainWindowView: View {
         ContentUnavailableView {
             Label("Select a session", systemImage: "terminal")
         } description: {
-            Text("Choose a tmux session from the sidebar, or create a new one with ⌘N.")
+            Text("Choose a session from the sidebar, or create a new one with ⌘N.")
         }
     }
 

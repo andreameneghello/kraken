@@ -84,8 +84,8 @@ struct KrakenApp: App {
     }
 
     private func createSessionInDirectory(name: String, directory: String) {
-        let tmux = TmuxController()
-        let success = tmux.createSession(name: name, directory: directory)
+        let zmx = ZmxController()
+        let success = zmx.createSession(name: name, directory: directory)
         guard success else { return }
 
         // Track recent directory

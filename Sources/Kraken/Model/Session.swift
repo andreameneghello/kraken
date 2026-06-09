@@ -1,7 +1,7 @@
 import Foundation
 
-/// A single tmux session exposed to the UI.
-/// The tmux session name is the canonical identifier.
+/// A single session exposed to the UI.
+/// The session name is the canonical identifier.
 struct Session: Identifiable, Hashable, Sendable {
     let id: String
     var name: String { id }
