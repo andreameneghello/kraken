@@ -70,3 +70,4 @@ Kraken.app/
 # SwiftPM auto-generated Xcode workspace files
 .swiftpm/xcode/package.xcworkspace/
 .swiftpm/xcode/xcuserdata/
+.DS_Store
